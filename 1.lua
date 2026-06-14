@@ -1,56 +1,36 @@
--- ==========================================
--- 1. INITIALIZE RAYFIELD LIBRARY
--- ==========================================
 local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
-local TweenService = game:GetService("TweenService")
 
 local Window = Rayfield:CreateWindow({
-    Name = "Tower Move Hub",
+    Name = "Tower Teleport Hub",
     LoadingTitle = "Loading Assets...",
     LoadingSubtitle = "by sunscrak", 
-    ConfigurationSaving = {Enabled = false}
+    ConfigurationSaving = {
+        Enabled = false,
+        FolderName = nil, 
+        FileName = "HubConfig"
+    },
+    Discord = {
+        Enabled = false,
+        Invite = "noinvitelink",
+        RememberJoins = true
+    },
+    KeySystem = false
 })
 
 local MainTab = Window:CreateTab("Automation", 4483362458)
-local Section = MainTab:CreateSection("Tween Movement Loop")
+local Section = MainTab:CreateSection("Fast Teleport Loop")
 
--- ==========================================
--- 2. CONTROL STATE & FIXED TWEEN LOGIC
--- ==========================================
 local isLooping = false
 local Player = game.Players.LocalPlayer
 local targetCoordinates = Vector3.new(-14.56, 162.22, -442.03)
 
-local tweenInfo = TweenInfo.new(
-    0.5, 
-    Enum.EasingStyle.Linear, 
-    Enum.EasingDirection.Out
-)
-
-local function startTweenLoop()
+local function startFastTeleportLoop()
     while isLooping do
         local character = Player.Character
         local humanoidRootPart = character and character:FindFirstChild("HumanoidRootPart")
         
         if humanoidRootPart then
-            -- 1. Grab your current location right before moving (so it can go back)
-            local startCFrame = humanoidRootPart.CFrame
-            local targetCFrame = CFrame.new(targetCoordinates)
-            
-            -- 2. Smoothly walk/tween to the destination (takes 0.5 seconds)
-            local walkTween = TweenService:Create(humanoidRootPart, tweenInfo, {CFrame = targetCFrame})
-            walkTween:Play()
-            walkTween.Completed:Wait() 
-            
-            -- 3. Give the game a split second to register the win/checkpoint
-            task.wait(0.2)
-            
-            if not isLooping then break end
-            
-            -- 4. Instantly teleport back to your starting point so you can "walk" up again
-            humanoidRootPart.CFrame = startCFrame
-            
-            -- 5. Wait a moment before starting the next walk cycle
+            humanoidRootPart.CFrame = CFrame.new(targetCoordinates)
             task.wait(0.5)
         else
             task.wait(1)
@@ -58,17 +38,26 @@ local function startTweenLoop()
     end
 end
 
--- ==========================================
--- 3. UI TOGGLE ELEMENT
--- ==========================================
 local Toggle = MainTab:CreateToggle({
-    Name = "Auto Walk/Tween Loop",
+    Name = "Teleport Loop",
     CurrentValue = false,
-    Flag = "TweenLoopToggle", 
+    Flag = "FastTpToggle", 
     Callback = function(Value)
         isLooping = Value
+        
         if isLooping then
-            task.spawn(startTweenLoop)
+            Rayfield:Notify({
+                Title = "Loop Activated",
+                Content = "Teleporting to coordinates every 0.5 seconds.",
+                Duration = 3
+            })
+            task.spawn(startFastTeleportLoop)
+        else
+            Rayfield:Notify({
+                Title = "Loop Stopped",
+                Content = "Teleportation paused.",
+                Duration = 3
+            })
         end
     end,
 })
