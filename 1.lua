@@ -39,7 +39,7 @@ local function startFastTeleportLoop()
 end
 
 local Toggle = MainTab:CreateToggle({
-    Name = "Teleport Loop",
+    Name = "0.5s Teleport Loop",
     CurrentValue = false,
     Flag = "FastTpToggle", 
     Callback = function(Value)
