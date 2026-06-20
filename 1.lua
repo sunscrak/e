@@ -27,10 +27,11 @@ local isProLooping = false
 local isNoobLooping = false
 local isAntiAfkLooping = false
 local Player = game.Players.LocalPlayer
-local VirtualInputManager = game:GetService("VirtualInputManager")
+local VirtualUser = game:GetService("VirtualUser")
 
 local proCoordinates = Vector3.new(-23.39, 223.77, 366.00)
 local noobCoordinates = Vector3.new(-14.56, 162.22, -442.03)
+local afkConnection
 
 local function startProLoop()
     while isProLooping do
@@ -39,7 +40,7 @@ local function startProLoop()
         
         if humanoidRootPart then
             humanoidRootPart.CFrame = CFrame.new(proCoordinates)
-            task.wait(0.5)
+            task.wait(1.5)
         else
             task.wait(1)
         end
@@ -53,27 +54,10 @@ local function startNoobLoop()
         
         if humanoidRootPart then
             humanoidRootPart.CFrame = CFrame.new(noobCoordinates)
-            task.wait(0.5)
+            task.wait(1.5)
         else
             task.wait(1)
         end
-    end
-end
-
-local function startAntiAfkLoop()
-    while isAntiAfkLooping do
-        local camera = workspace.CurrentCamera
-        if camera then
-            local viewportSize = camera.ViewportSize
-            local centerX = viewportSize.X / 2
-            local centerY = viewportSize.Y / 2
-            
-            VirtualInputManager:SendMouseButtonEvent(centerX, centerY, 0, true, game, 1)
-            task.wait(0.1)
-            VirtualInputManager:SendMouseButtonEvent(centerX, centerY, 0, false, game, 1)
-        end
-        
-        task.wait(1020)
     end
 end
 
@@ -85,18 +69,12 @@ local ProToggle = MainTab:CreateToggle({
         isProLooping = Value
         
         if isProLooping then
-            Rayfield:Notify({
-                Title = "Pro Loop Activated",
-                Content = "Teleporting to Pro Tower every 0.5 seconds.",
-                Duration = 3
-            })
-            task.spawn(startProLoop)
-        else
-            Rayfield:Notify({
-                Title = "Pro Loop Stopped",
-                Content = "Pro Tower teleportation paused.",
-                Duration = 3
-            })
+            if isNoobLooping then
+                Rayfield:Notify({Title = "Error", Content = "Turn off Noob Tower loop first!", Duration = 3})
+            else
+                Rayfield:Notify({Title = "Pro Loop Activated", Content = "Teleporting to Pro Tower safely.", Duration = 3})
+                task.spawn(startProLoop)
+            end
         end
     end,
 })
@@ -109,18 +87,12 @@ local NoobToggle = MainTab:CreateToggle({
         isNoobLooping = Value
         
         if isNoobLooping then
-            Rayfield:Notify({
-                Title = "Noob Loop Activated",
-                Content = "Teleporting to Noob Tower every 0.5 seconds.",
-                Duration = 3
-            })
-            task.spawn(startNoobLoop)
-        else
-            Rayfield:Notify({
-                Title = "Noob Loop Stopped",
-                Content = "Noob Tower teleportation paused.",
-                Duration = 3
-            })
+            if isProLooping then
+                Rayfield:Notify({Title = "Error", Content = "Turn off Pro Tower loop first!", Duration = 3})
+            else
+                Rayfield:Notify({Title = "Noob Loop Activated", Content = "Teleporting to Noob Tower safely.", Duration = 3})
+                task.spawn(startNoobLoop)
+            end
         end
     end,
 })
@@ -135,11 +107,20 @@ local AntiAfkToggle = UtilityTab:CreateToggle({
         if isAntiAfkLooping then
             Rayfield:Notify({
                 Title = "Anti-AFK Active",
-                Content = "Simulating center clicks every 17 minutes.",
+                Content = "Will intercept and block idle kicks.",
                 Duration = 3
             })
-            task.spawn(startAntiAfkLoop)
+            
+            afkConnection = Player.Idled:Connect(function()
+                VirtualUser:CaptureController()
+                VirtualUser:ClickButton2(Vector2.new())
+            end)
         else
+            if afkConnection then
+                afkConnection:Disconnect()
+                afkConnection = nil
+            end
+            
             Rayfield:Notify({
                 Title = "Anti-AFK Stopped",
                 Content = "Anti-idle sequence paused.",
