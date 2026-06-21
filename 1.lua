@@ -40,7 +40,7 @@ local function startProLoop()
         
         if humanoidRootPart then
             humanoidRootPart.CFrame = CFrame.new(proCoordinates)
-            task.wait(1.5)
+            task.wait(0.5)
         else
             task.wait(1)
         end
@@ -54,7 +54,7 @@ local function startNoobLoop()
         
         if humanoidRootPart then
             humanoidRootPart.CFrame = CFrame.new(noobCoordinates)
-            task.wait(1.5)
+            task.wait(0.5)
         else
             task.wait(1)
         end
@@ -72,7 +72,7 @@ local ProToggle = MainTab:CreateToggle({
             if isNoobLooping then
                 Rayfield:Notify({Title = "Error", Content = "Turn off Noob Tower loop first!", Duration = 3})
             else
-                Rayfield:Notify({Title = "Pro Loop Activated", Content = "Teleporting to Pro Tower safely.", Duration = 3})
+                Rayfield:Notify({Title = "Pro Loop Activated", Content = "Teleporting to Pro Tower every 0.5s.", Duration = 3})
                 task.spawn(startProLoop)
             end
         end
@@ -90,7 +90,7 @@ local NoobToggle = MainTab:CreateToggle({
             if isProLooping then
                 Rayfield:Notify({Title = "Error", Content = "Turn off Pro Tower loop first!", Duration = 3})
             else
-                Rayfield:Notify({Title = "Noob Loop Activated", Content = "Teleporting to Noob Tower safely.", Duration = 3})
+                Rayfield:Notify({Title = "Noob Loop Activated", Content = "Teleporting to Noob Tower every 0.5s.", Duration = 3})
                 task.spawn(startNoobLoop)
             end
         end
